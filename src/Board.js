@@ -12,7 +12,7 @@ export class Board {
       const cell = document.createElement('div');
       cell.className = 'cell';
       cell.dataset.index = i;
-      this.container.appendChild(cell);
+      this.container.append(cell);
       this.cells.push(cell);
     }
   }
@@ -23,9 +23,11 @@ export class Board {
   }
 
   createGoblin(cell) {
-    const goblin = document.createElement('div');
+    const goblin = document.createElement('img');
     goblin.className = 'goblin';
-    cell.appendChild(goblin);
+    goblin.src = './images/goblin.png';
+    goblin.alt = 'Goblin';
+    cell.append(goblin);
     return goblin;
   }
 
