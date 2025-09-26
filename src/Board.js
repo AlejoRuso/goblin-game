@@ -25,7 +25,7 @@ export class Board {
   createGoblin(cell) {
     const goblin = document.createElement('img');
     goblin.className = 'goblin';
-    goblin.src = './images/goblin.png';
+    goblin.src = 'images/goblin.png';
     goblin.alt = 'Goblin';
     cell.append(goblin);
     return goblin;
