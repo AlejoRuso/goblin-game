@@ -6,37 +6,52 @@ export class Game {
     this.activeGoblin = null;
     this.interval = null;
     this.previousCellIndex = null;
+    this.isGameRunning = false;
+    this.handleCellClick = this.handleCellClick.bind(this);
   }
 
   start() {
+    if (this.isGameRunning) return;
+    
+    this.isGameRunning = true;
+    this.resetStats();
     this.updateStats();
+    
+    this.board.container.addEventListener('click', this.handleCellClick);
+    
     this.interval = setInterval(() => {
       this.moveGoblin();
     }, 1000);
+  }
 
-    // Обработчик кликов по ячейкам
-    this.board.container.addEventListener('click', (event) => {
-      const cell = event.target.closest('.cell');
-      if (!cell) return;
+handleCellClick(event) {
+    const cell = event.target.closest('.cell');
+    if (!cell || !this.isGameRunning) return;
+    
+    const goblin = cell.querySelector('.goblin');
+    
+    if (goblin) {
+      // Попадание по гоблину
+      this.score++;
+      goblin.remove();
+      this.activeGoblin = null;
+    } else {
+      // Промах по пустой ячейке
+      this.misses++;
       
-      // Если в ячейке есть гоблин
-      if (cell.querySelector('.goblin')) {
-        this.score++;
-        this.updateStats();
-        cell.querySelector('.goblin').remove();
-        this.activeGoblin = null;
-      } else {
-        // Если кликнули по пустой ячейке - промах
-        this.misses++;
-        this.updateStats();
-        if (this.misses >= 5) {
-          this.endGame();
-        }
+      if (this.misses >= 5) {
+        this.endGame();
+        return;
       }
-    });
+    }
+    
+    this.updateStats();
   }
 
   moveGoblin() {
+    if (!this.isGameRunning) return;
+    
+    // Если гоблин уже есть на поле - это промах
     if (this.activeGoblin) {
       this.misses++;
       this.updateStats();
@@ -52,7 +67,7 @@ export class Game {
     // Выбираем случайную ячейку, отличную от предыдущей
     let randomCell;
     let attempts = 0;
-    const maxAttempts = 100; // Защита от бесконечного цикла
+    const maxAttempts = 100;
     
     do {
       randomCell = this.board.getRandomCell();
@@ -72,8 +87,21 @@ export class Game {
     document.getElementById('misses').textContent = this.misses;
   }
 
+  resetStats() {
+    this.score = 0;
+    this.misses = 0;
+    this.activeGoblin = null;
+    this.previousCellIndex = null;
+    this.board.clear();
+  }
+
   endGame() {
+    if (!this.isGameRunning) return;
+    
+    this.isGameRunning = false;
     clearInterval(this.interval);
+    this.interval = null;
+    
     this.showModal(`Game Over! Your score: ${this.score}`);
   }
 
@@ -85,19 +113,31 @@ export class Game {
     modalMessage.textContent = message;
     modal.style.display = 'block';
     
+    // Удаляем старый обработчик и добавляем новый
     restartButton.onclick = () => {
       modal.style.display = 'none';
       this.reset();
     };
+    
+    // Закрытие модального окна при клике вне его
+    modal.onclick = (event) => {
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
   }
 
   reset() {
-    this.score = 0;
-    this.misses = 0;
-    this.activeGoblin = null;
-    this.previousCellIndex = null;
-    this.board.clear();
-    this.updateStats();
+    // Полностью останавливаем игру перед рестартом
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+    
+    // Удаляем обработчик кликов
+    this.board.container.removeEventListener('click', this.handleCellClick);
+    
+    // Перезапускаем игру
     this.start();
   }
 }
