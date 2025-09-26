@@ -24,7 +24,7 @@ export class Game {
     }, 1000);
   }
 
-handleCellClick(event) {
+  handleCellClick(event) {
     const cell = event.target.closest('.cell');
     if (!cell || !this.isGameRunning) return;
     
